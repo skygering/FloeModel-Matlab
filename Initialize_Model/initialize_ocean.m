@@ -19,9 +19,12 @@ transport=0.5e4; % horizontal transport, in m^2/s (controls ocean currents)
 psi_ocean=transport/1*(sin(4*kx*Xocn).*sin(4*ky*Yocn));
 
 %calculating ocean velocity field 
-Uocn=zeros(size(Xocn)); Vocn=zeros(size(Xocn));
-Uocn(2:end,:)=-(psi_ocean(2:end,:)-psi_ocean(1:end-1,:))/dXo; 
-Vocn(:,2:end)=(psi_ocean(:,2:end)-psi_ocean(:,1:end-1))/dXo;
+
+%changed to only have x-direction velocity for simple sim
+% previously Uocn=zeros(size(Xocn));
+Uocn=ones(size(Xocn)); Vocn=zeros(size(Xocn));
+%Uocn(2:end,:)=-(psi_ocean(2:end,:)-psi_ocean(1:end-1,:))/dXo; 
+%Vocn(:,2:end)=(psi_ocean(:,2:end)-psi_ocean(:,1:end-1))/dXo; 
 
 ocean.Xo=Xo;
 ocean.Yo=Yo;

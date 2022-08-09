@@ -224,7 +224,7 @@ while im_num<nSnapshots
         [eulerian_data] = calc_eulerian_data(Floe,Nx,Ny,Nb,c2_boundary,PERIODIC);
         if ifPlot
             [fig] = plot_basic(fig, Time,Floe,ocean,c2_boundary_poly,Nb,PERIODIC);
-%              saveas(fig,['./figs/' num2str(im_num,'%03.f') '.jpg'],'jpg');
+              saveas(fig,['./figs/' num2str(im_num,'%03.f') '.jpg'],'jpg');
         end
         
         %Average coarse eulerian data

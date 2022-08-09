@@ -125,6 +125,7 @@ else
             
             Uocn_interp=interp2(Xo(x_ind),Yo(y_ind), Uocn(y_ind,x_ind),Xg,Yg);
             Vocn_interp=interp2(Xo(x_ind),Yo(y_ind), Vocn(y_ind,x_ind),Xg,Yg);
+            %Uocn is all 100's
             Uwinds_interp=interp2(Xo(x_ind),Yo(y_ind), Uwinds(y_ind,x_ind),Xg,Yg);
             Vwinds_interp=interp2(Xo(x_ind),Yo(y_ind), Vwinds(y_ind,x_ind),Xg,Yg);
 
@@ -133,16 +134,14 @@ else
             Fy_atm=rho_air*Cd_atm*sqrt(U10^2+V10^2)*V10;
             
             Fx_pressureGrad=-(floe_mass/floe_area)*fc*Vocn_interp; % SSH tilt term
-            Fy_pressureGrad=+(floe_mass/floe_area)*fc*Uocn_interp;        
+            Fy_pressureGrad=+(floe_mass/floe_area)*fc*Uocn_interp;
         
-            du=Uocn_interp-Uice; dv=Vocn_interp-Vice;            
-        
+            du=Uocn_interp-Uice; dv=Vocn_interp-Vice;  
             tau_ocnX=rho0*Cd*sqrt(du.^2+dv.^2).*( cos(ocean.turn_angle)*du+sin(ocean.turn_angle)*dv); % ocean stress with the turning angle
             tau_ocnY=rho0*Cd*sqrt(du.^2+dv.^2).*(-sin(ocean.turn_angle)*du+cos(ocean.turn_angle)*dv);
             
             Fx=tau_ocnX+Fx_atm+Fx_pressureGrad; 
             Fy=tau_ocnY+Fy_atm+Fy_pressureGrad;
-            
             
             % updating the ice floe vorticity with averaged torques over the ice floe area
             torque=(-Fx.*sin(theta)+Fy.*cos(theta)).*rho;  % torque
@@ -155,6 +154,7 @@ else
             floe.FxOA = mean(Fx(floe.A));
             floe.FyOA = mean(Fy(floe.A));
             floe.torqueOA = mean(torque(floe.A));
+            % These are all non-zero and use ocean/atmos forces!!
         end
             
         

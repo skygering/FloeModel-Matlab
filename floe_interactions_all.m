@@ -265,7 +265,9 @@ parfor i=1+Nb:N0
     
    %Do the timestepping now that forces and torques are known.
     if Floe(i).alive
+        % ONLY PLACE OCEAN IS USED --> Fx and Fy are returning 0 right now
         [tmp,Fx,Fy] =calc_trajectory(dt,ocean,winds,Floe(i),HFo,doInt);
+        fprintf('Fx: %d\n Fy: %d\n', Fx, Fy);
         if (isempty(tmp) || isnan(x(i)) ), kill(i)=i; else; Floe(i)=tmp; Floe(i).Fx = Fx; Floe(i).Fy = Fy; end
     end
 
