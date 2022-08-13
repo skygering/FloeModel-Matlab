@@ -22,7 +22,7 @@ psi_ocean=transport/1*(sin(4*kx*Xocn).*sin(4*ky*Yocn));
 
 %changed to only have x-direction velocity for simple sim
 % previously Uocn=zeros(size(Xocn));
-Uocn=ones(size(Xocn)); Vocn=zeros(size(Xocn));
+Uocn=0.5*ones(size(Xocn)); Vocn=zeros(size(Xocn));
 %Uocn(2:end,:)=-(psi_ocean(2:end,:)-psi_ocean(1:end-1,:))/dXo; 
 %Vocn(:,2:end)=(psi_ocean(:,2:end)-psi_ocean(:,1:end-1))/dXo; 
 

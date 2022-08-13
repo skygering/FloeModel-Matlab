@@ -7,7 +7,7 @@ RIDGING=false;
 
 FRACTURES=false;
 
-PERIODIC=false;
+PERIODIC=true;
 
 PACKING = false;
 

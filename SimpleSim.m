@@ -7,7 +7,7 @@ RIDGING=false;
 
 FRACTURES=false;
 
-PERIODIC=false;
+PERIODIC=true;  % making this true causes an error...
 
 PACKING = false;
 
@@ -51,11 +51,19 @@ f=2*pi/(24*3600);
 Ly = max(c2_boundary(2,:));Lx = max(c2_boundary(1,:));
 min_floe_size = 4*Lx*Ly/10000; %set minimum floe size for initialization
 
-poly = polyshape([-0.7e5 -0.7e5 -0.6e5 -0.6e5],[0.2e5 0.1e5 0.1e5 0.2e5]);
+%{
+poly = polyshape([-0.7e5 -0.7e5 -0.4e5 -0.4e5],[0.4e5 0.1e5 0.1e5 0.4e5]);
 floenew = initialize_floe_values(poly,height);
 Floe = [];
 Floe = [Floe floenew];
 Nb = 0;
+%}
+
+
+%Initialize Floe state
+target_concentration = 0.01; %Set target concentration for initial conditions
+[Floe, Nb] = initial_concentration(c2_boundary,target_concentration,height,1,min_floe_size);
+
 polyboundary = [];
 
 c2_boundary_poly = polyshape(c2_boundary');
