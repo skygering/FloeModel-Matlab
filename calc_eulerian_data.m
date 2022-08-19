@@ -131,7 +131,7 @@ for ii = 1:length(Floe)
 end
 
 %Find potential interactions
-potentialInteractions = zeros(Ny,Nx,length(Floe));
+potentialInteractions = zeros(Ny,Nx,length(Floe)); % is there potentially a floe in the grid cell
 for ii = 1:length(Floe)
     pint = sqrt((xx-xf(ii)).^2+(yy-yf(ii)).^2)-(rmax(ii)+r_max);
     pint(pint>0) = 0;
@@ -144,8 +144,9 @@ end
 
 for ii = 1:Nx
     for jj = 1:Ny
+        % floes with potential interactions within grid box considering
         live = logical(squeeze(potentialInteractions(jj,ii,:)));
-        Mtot = sum(cat(1,Floe(live == 1).mass));
+        Mtot = sum(cat(1,Floe(live == 1).mass)); % total mass of all "live" floes
         if Mtot>0 
             
             %create the box and identify and subtract off any boundaries
@@ -158,15 +159,18 @@ for ii = 1:Nx
             %Find all floes from the potentially interacting ones that have
             %a piece in this area. Values weighted by mass in cell
             FloeNums = 1:length(Floe);
-            FloeNums(live==0) = [];
+            FloeNums(live==0) = []; % keeps floes that might be in box
             overlap = intersect(box,poly(FloeNums));
             Aover = area(overlap)';
-            FloeNums(Aover==0)=[];
-            Aover(Aover==0) = [];
-            A2 = A(FloeNums);
+            FloeNums(Aover==0)=[]; % keeps floes that have non-zero box overlap
+            Aover(Aover==0) = []; % keeps area overlap of floes with non-zero overlap
+            A2 = A(FloeNums); % keeps area of floes that have an overlap
+
+            % sum of total floe area within grid box calculated with area
+            % ratio
             Mtot = sum(mass(FloeNums).*Aover./A2);
             Atot = sum(Aover);
-            eulerian_data.c(jj,ii) = Atot/area(box);
+            eulerian_data.c(jj,ii) = Atot/area(box); % percent of grid box occupied by floes
             if Mtot>0
                 eulerian_data.Over(jj,ii) = sum(Overlap(FloeNums))/length(Aover);
                 eulerian_data.Mtot(jj,ii) = Mtot;

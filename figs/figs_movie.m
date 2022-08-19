@@ -6,8 +6,8 @@ Uses MATLAB's VideoWriter. For documentation see:
 https://www.mathworks.com/help/matlab/ref/videowriter.html
 %}
 
-v = VideoWriter('simple_sim_tesselation', 'MPEG-4');  % saves as mp4
-v.FrameRate = 3;
+v = VideoWriter('simple_sim_collision_off', 'MPEG-4');  % saves as mp4
+v.FrameRate = 5;
 open(v);
 
 fileList = dir('*.jpg');

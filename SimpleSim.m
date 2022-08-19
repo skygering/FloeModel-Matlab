@@ -7,15 +7,15 @@ RIDGING=false;
 
 FRACTURES=false;
 
-PERIODIC=true;  % making this true causes an error...
+PERIODIC=false;  % making this true causes an error...
 
 PACKING = false;
 
 WELDING = false;
 
-CORNERS = true;
+CORNERS = false;
 
-COLLISION = true;
+COLLISION = false;
 
 AVERAGE = false; %average certain values in time
 
@@ -52,7 +52,7 @@ Ly = max(c2_boundary(2,:));Lx = max(c2_boundary(1,:));
 min_floe_size = 4*Lx*Ly/10000; %set minimum floe size for initialization
 
 %{
-poly = polyshape([-0.7e5 -0.7e5 -0.4e5 -0.4e5],[0.4e5 0.1e5 0.1e5 0.4e5]);
+poly = polyshape([0e5 0e5 0.4e5 0.4e5],[0.4e5 0.1e5 0.1e5 0.4e5]);
 floenew = initialize_floe_values(poly,height);
 Floe = [];
 Floe = [Floe floenew];
@@ -62,12 +62,12 @@ Nb = 0;
 
 %Initialize Floe state
 target_concentration = 0.01; %Set target concentration for initial conditions
-[Floe, Nb] = initial_concentration(c2_boundary,target_concentration,height,1,min_floe_size);
+[Floe, Nb] = initial_concentration(c2_boundary,target_concentration,height,5,min_floe_size);
 
 polyboundary = [];
-
 c2_boundary_poly = polyshape(c2_boundary');
-c2_border = polyshape(2*[-Lx -Lx Lx Lx; -Ly Ly Ly -Ly]'); c2_border = subtract(c2_border, c2_boundary_poly);
+c2_border = polyshape(2*[-Lx -Lx Lx Lx; -Ly Ly Ly -Ly]'); 
+c2_border = subtract(c2_border, c2_boundary_poly);
 floebound = initialize_floe_values(c2_border, height);
 if isfield(Floe,'poly')
     Floe=rmfield(Floe,{'poly'});
@@ -82,9 +82,9 @@ save('Modulus.mat','Modulus');
 %% Inner Model Workings
 dhdt = 1; %atmospheric heat flux
 
-nDTOut=150; %Output frequency (in number of time steps)
+nDTOut=250; %Output frequency (in number of time steps)
 
-nSnapshots=50; %Total number of model snapshots to save
+nSnapshots=75; %Total number of model snapshots to save
 
 nDT=nDTOut*nSnapshots; %Total number of time steps
 

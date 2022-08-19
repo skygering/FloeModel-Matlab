@@ -1,7 +1,7 @@
 function c2_boundary =initialize_boundaries()
 
 %Adding walls around the domain
-Lx=1e5; Ly=1e5;
+Lx=3e5; Ly=3e5;
 x=[-1 -1 1 1 -1]*Lx; 
 y=[-1 1 1 -1 -1]*Ly;
 

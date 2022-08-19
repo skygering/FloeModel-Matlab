@@ -221,8 +221,6 @@ else
             
             Uice=floe.Ui-rho*floe.ksi_ice.*sin(theta); % X-dir floe velocity (variable within the ice floe)
             Vice=floe.Vi+rho*floe.ksi_ice.*cos(theta); % Y-dir velocity
-            disp([Uice Uice(1)]);
-            disp(diff([Uice Uice(1)]));
             du_dx = 0.5*sum(diff([Uice Uice(1)]).*diff([floe.c_alpha(2,:) floe.c_alpha(2,1)]))/floe_area;
             du_dy = 0.5*sum(diff([Uice Uice(1)]).*diff([floe.c_alpha(1,:) floe.c_alpha(1,1)]))/floe_area;
             dv_dx = 0.5*sum(diff([Vice Vice(1)]).*diff([floe.c_alpha(2,:) floe.c_alpha(2,1)]))/floe_area;
@@ -235,7 +233,6 @@ end
 if ~isempty(floe)
     floe.Fx = ext_force(1); 
 end
-ftx
 
 FxOA = ext_force(1);
 FyOA = ext_force(2);

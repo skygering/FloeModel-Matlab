@@ -110,7 +110,7 @@ plot(xb,yb, 'k-','linewidth',2);
 
 colormap('gray'); caxis([0 1]);
 axis([-Lx-Lx/10 Lx+Lx/10 -Ly-Ly/10 Ly+Ly/10])
-axis([-100000 100000 -100000 100000])
+%axis([-100000 100000 -100000 100000])
 %xlabel('m');ylabel('m');
 set(gca,'Ydir','normal');
 % set(gca,'xtick',[])
