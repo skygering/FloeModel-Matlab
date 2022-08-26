@@ -55,7 +55,7 @@ Ly = max(c2_boundary(2,:));Lx = max(c2_boundary(1,:));
 min_floe_size = 4*Lx*Ly/10000; %set minimum floe size for initialization
 
 %Initialize Floe state
-target_concentration = 1; %Set target concentration for initial conditions
+target_concentration = 0.5; %Set target concentration for initial conditions
 [Floe, Nb] = initial_concentration(c2_boundary,target_concentration,height,10,min_floe_size);
 
 %create polyshape of any boundary floes
@@ -66,8 +66,12 @@ else
 end
 c2_boundary_poly = polyshape(c2_boundary');
 c2_border = polyshape(2*[-Lx -Lx Lx Lx; -Ly Ly Ly -Ly]'); c2_border = subtract(c2_border, c2_boundary_poly);
+% boundary floe that has a hole in it - outer edge is 2 times inner, hole is
+% initialized border
 floebound = initialize_floe_values(c2_border, height);
 if isfield(Floe,'poly')
+    % removes polyshape from Floe struct - can reconstruct verticies
+    % centroid and c_alpha/c0
     Floe=rmfield(Floe,{'poly'});
 end
 min_floe_size = (4*Lx*Ly-sum(cat(1,Floe(1:Nb).area)))/20000; %set minimum floe size for simulation
@@ -99,7 +103,7 @@ nSimp = 20; %Timesteps between simplification of floe boundaries
 %    parpool(nPar);
 %end
 
-target_concentration=1; %Set target concentration for when creation of new elements will be run
+target_concentration=0.7; %Set target concentration for when creation of new elements will be run
 tStart = tic; 
 
 %ocean forces need updated on less frequent time scale
@@ -118,6 +122,8 @@ dissolvedNEW=zeros(Ny,Nx);
 
 %Initiailize Eulearian Data
 [eulerian_data] = calc_eulerian_data(Floe,Nx,Ny,Nb,c2_boundary,PERIODIC);
+
+% What are all of these?1
 Vd = zeros(Ny,Nx,2);
 Vdnew=zeros(Ny, Nx);
 SigXX = zeros(Ny, Nx); SigYX = zeros(Ny, Nx);
@@ -130,7 +136,7 @@ Fx = zeros(Ny, Nx); Fy = zeros(Ny, Nx);
 Sig = zeros(Ny, Nx); mass = zeros(Ny,Nx);
 
 %% Calc interactions and plot initial state
-Floe=Floe(logical(cat(1,Floe.alive)));
+Floe=Floe(logical(cat(1,Floe.alive))); % determine which floes are still alive
 [Floe,dissolvedNEW] = floe_interactions_all(Floe, floebound, ocean, winds,c2_boundary, dt,HFo,min_floe_size,Nx,Ny,Nb, dissolvedNEW,doInt,COLLISION, PERIODIC, RIDGING, RAFTING); % find interaction points
 A=cat(1,Floe.area);
 Amax = max(A);
@@ -169,7 +175,7 @@ while im_num<nSnapshots
     %Dynamic simplification of floe shape
     if mod(i_step,nSimp)==0
         FloeOld = Floe;
-        parfor j=1:length(FloeOld)
+        parfor j=1:length(FloeOld) % SG: Make polyshape for all old floes
             FloeOld(j).poly = polyshape(FloeOld(j).c_alpha'+[FloeOld(j).Xi FloeOld(j).Yi]);
         end
         floenew = [];
@@ -183,7 +189,7 @@ while im_num<nSnapshots
         end
         parfor ii = 1:length(Floe)
             floe = Floe(ii);
-            if length(Floe(ii).c0) > 30
+            if length(Floe(ii).c0) > 30 % SG: how was 30 determined?
                 [floe2,kill] = FloeSimplify(Floe(ii),0,FloeOld,polyboundary);
                 if isfield(floe2,'poly')
                     floe2=rmfield(floe2,{'poly'});

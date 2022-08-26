@@ -11,7 +11,7 @@ Floe(live==0)=[];
 Lx= max(c2_boundary(1,:));
 Ly= max(c2_boundary(2,:));%c2 must be symmetric around x=0 for channel boundary conditions.
 if PERIODIC
-    
+    % exact same code as in floe_interactions_all
     ghostFloeX=[];
     ghostFloeY=[];
     
@@ -29,7 +29,7 @@ if PERIODIC
         end
         
     end
-    
+    % adds ghost floe to Floe, copy of existing floe with center changed
     Floe=[Floe ghostFloeX];
     
     x=cat(1,Floe.Xi);
@@ -78,8 +78,9 @@ yf = cat(1,Floe.Yi);
 rmax = cat(1,Floe.rmax);
 y = fliplr(y);
 dx = abs(x(2)-x(1));
-
 dy = abs(y(2)-y(1));
+
+% initialize floe variables for coarse grid
 r_max = sqrt((dx/2)^2+(dy/2)^2);
 eulerian_data.u = zeros(Ny,Nx);
 eulerian_data.v = zeros(Ny,Nx);
@@ -102,7 +103,7 @@ eulerian_data.Mtot = zeros(Ny,Nx);
 eulerian_data.area = zeros(Ny,Nx);
 eulerian_data.h = zeros(Ny,Nx);
 
-
+% pull values our of Floe and make sure anything that is nan is set to 0
 mass = cat(1,Floe.mass);
 mass(isnan(mass)==1)=0;
 A = cat(1,Floe.area);

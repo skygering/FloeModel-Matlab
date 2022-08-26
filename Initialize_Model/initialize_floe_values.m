@@ -3,10 +3,14 @@ function FloeNEW = initialize_floe_values(poly1, height)
 
 rho_ice=920;
 
+% poly1 could be multiple shapes within one polyshape object
 polyout = sortregions(poly1,'area','descend');
 R = regions(polyout);
+% consider the largest region given
 poly1 = R(1);
 polya = rmholes(poly1);
+
+% determine height for floe being initialized
 h=height.mean+(-1)^randi([0 1])*rand*height.delta;
 
 FloeNEW.poly = poly1;
@@ -14,7 +18,7 @@ FloeNEW.poly = poly1;
 FloeNEW.area = area(FloeNEW.poly); %Floe area (m^2)
 FloeNEW.h = h;  %Floe Thickness (m)
 FloeNEW.mass = FloeNEW.area*h*rho_ice; %kg
-FloeNEW.c_alpha = [(polya.Vertices-[Xi Yi])' [polya.Vertices(1,1)-Xi; polya.Vertices(1,2)-Yi]]; %Floe boundary rotated about a reference position
+FloeNEW.c_alpha = [(polya.Vertices-[Xi Yi])' [polya.Vertices(1,1)-Xi; polya.Vertices(1,2)-Yi]]; %Floe boundary rotated about a reference position & add first point again at the end
 FloeNEW.c0 = FloeNEW.c_alpha; %Unroated floe boundary
 FloeNEW.inertia_moment = PolygonMoments(FloeNEW.c0',h); %Moment of inertia
 FloeNEW.angles = polyangles(polya.Vertices(:,1),polya.Vertices(:,2)); %Interior angles of floe vertices
@@ -29,9 +33,12 @@ FloeNEW.FxOA = 0; FloeNEW.FyOA = 0; FloeNEW.torqueOA = 0; %Forces/torques from o
 err = 1;
 count = 1;
 while err > 0.1
-    FloeNEW.X = FloeNEW.rmax*(2*rand(1000,1) - 1); %X coordinate for monte-carlo integration 
-    FloeNEW.Y = FloeNEW.rmax*(2*rand(1000,1) - 1); %Y coordinate for monte-carlo integration
+    FloeNEW.X = FloeNEW.rmax*(2*rand(1000,1) - 1); %X coordinate for monte-carlo integration - forms circle
+    FloeNEW.Y = FloeNEW.rmax*(2*rand(1000,1) - 1); %Y coordinate for monte-carlo integration - forms circle
     FloeNEW.A = inpolygon(FloeNEW.X,FloeNEW.Y,FloeNEW.c_alpha(1,:),FloeNEW.c_alpha(2,:)); %Identify which are within floe boundary
+    % area of approximate circle multiplied by percent of points within
+    % floe subtracted by the area of the floe -> approximately area outside
+    % of the floe but within range of X and Y points -> over floe area
     err = abs((sum(FloeNEW.A)/1000*4*FloeNEW.rmax^2-area(polya)))/area(polya);
     count = count+1; if count>10; err = 0; FloeNEW.alive = 0; end
 end

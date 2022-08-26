@@ -12,6 +12,7 @@ floes = [];
 rho_ice = 920;
 
 %Identify potential interactions
+% SG: Same code as in floe_interactions_all
 x=cat(1,Floe0.Xi);
 y=cat(1,Floe0.Yi);
 rmax=cat(1,Floe0.rmax);
@@ -37,11 +38,11 @@ end
 %Create new simplified polyshape
 floenew = floe;
 floenew.poly = polyshape(floenew.c_alpha'+[floenew.Xi floenew.Yi]);
-[verts] = reducepoly(floe.c0');
+[verts] = reducepoly(floe.c0'); % SG: going to need something that does this
 pnew = polyshape(verts);
 if ~isempty(polyboundary)
-    pnew = translate(pnew,[floenew.Xi floenew.Yi]);
-    pnew = subtract(pnew,polyboundary); 
+    pnew = translate(pnew,[floenew.Xi floenew.Yi]); % SG: isn't this just adding centroid
+    pnew = subtract(pnew,polyboundary); % make sure it isn't overlapping with boundary
     pnew = translate(pnew,-[floenew.Xi floenew.Yi]);
 end
 Atot = sum(area(pnew));
@@ -53,20 +54,20 @@ elseif Atot ==0
   save('floefail.mat','floe','pnew');
   R = [];
 else
-  polynew = scale(pnew,sqrt(floe.area/Atot));
-
-  %Align center of old polygon with the enw one
+  polynew = scale(pnew,sqrt(floe.area/Atot)); % SG: Make sure we didn't lose too much area with simplification
+  %Align center of old polygon with the new one
   [x1,y1] = centroid(polynew);
-  dx = floe.Xi-x1;
+  dx = floe.Xi-x1; % never used?
   dy = floe.Yi-y1;
 
   %Check if simplifcation led to polygon having multiple regions
   polyout = sortregions(polynew,'area','descend');
-  R = regions(polyout);
+  R = S(polyout);
   R = R(area(R)>1e4);
   Atot = sum(area(R));
 end
 
+% SG: Keep looking here! 
 %Check if simplification removed any holes and now needs to weld with smaller
 %floes
 for jj = 1:length(R)

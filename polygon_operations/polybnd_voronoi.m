@@ -43,11 +43,14 @@ end
 for i = 1:size(pos,1)
     k = 0;
     for j = 1:size(TRI,1)
+        % check if point i is in triangle j
         if ~isempty(MY_intersect(i,TRI(j,:)))
             k = k + 1;
+            % record triangle j verticies other than point i 
             neib2{i}(k,:) = MY_setdiff(TRI(j,:),i);
         end
     end
+    % keep only unique verticies
     neib3{i} = unique(neib2{i});
     if size(neib3{i},1) == 1
         vornb{i} = neib3{i};
@@ -63,8 +66,8 @@ for i = 1:size(pos,1)
         [A{i}(k,:),b{i}(k,:)] = pbisec(pos(i,:), pos(vornb{i}(j),:));
     end
 end
-% obtain MY_intersection between bisectors + boundary
 
+% obtain MY_intersection between bisectors + boundary
 for i = 1:size(pos,1)
     Aaug{i} = [A{i};Abnd];
     baug{i} = [b{i};bbnd];

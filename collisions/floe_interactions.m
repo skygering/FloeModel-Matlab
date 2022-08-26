@@ -23,34 +23,34 @@ gam = 0;
 
 %Check if floes are actually overlapping
 c1=[floe1.c_alpha(1,:)+floe1.Xi; floe1.c_alpha(2,:)+floe1.Yi];
-if isfield(floe2,'c')
+if isfield(floe2,'c') % SG: only true when created through potential interactions
     c2=floe2.c;
     boundary = 0;
     [Xi,Yi] = polyclip(c1',c2','int');
-else
-    polyb = holes(floe2.poly);
+else % SG: only true if boundary
+    polyb = holes(floe2.poly); % SG: I thought that the poly field was removed in SubZero.m?
     c2 = [polyb.Vertices]';
     boundary = 1;
-    [Xi,Yi] = polyclip(c1',c2','dif');
+    [Xi,Yi] = polyclip(c1',c2','dif'); % part of floe not on boundary
     if ~isempty(Xi)
         X2 = Xi{1}; Y2 = Yi{1};
         if polyarea(X2,Y2)/floe1.area > 0.75
-            overlap = Inf;
+            overlap = Inf; 
         end
     end
 end
 
 if isempty(Xi)
-    Ar = 0;
+    Ar = 0; % SG: array of polygons that represent areas of the two floes that are interating
 else
     for k = 1:length(Xi)
         X = Xi{k}; Y = Yi{k};
         poly = polyshape(X,Y);
-        Ar(k) = area(poly);
+        Ar(k) = area(poly); % SG: add all interacting areas
     end
 end
 
-%If floes are overlapping to much set to merge into one floe
+%If floes are overlapping too much set to merge into one floe
 if  (max(c1(1,:))<max(c2_boundary(1,:)) && min(c1(1,:))>min(c2_boundary(1,:)) && max(c1(2,:))<max(c2_boundary(2,:)) && min(c1(2,:))>min(c2_boundary(2,:))|| floe2.area<0.95*area(polyshape(c2_boundary')) || PERIODIC) 
     if sum(Ar)/floe1.area > 0.55
         overlap = Inf;
@@ -59,7 +59,7 @@ if  (max(c1(1,:))<max(c2_boundary(1,:)) && min(c1(1,:))>min(c2_boundary(1,:)) &&
     end
 end
 
-if norm(c1(:,1)-c1(:,end))> 1
+if norm(c1(:,1)-c1(:,end))> 1 %SG: why is this 1 and not 0? Aren't we checking if first and last value is the same? 
     c1(:,length(c1)+1) = c1(:,1);
 end
 if norm(c2(:,1)-c2(:,end))> 1
@@ -67,7 +67,7 @@ if norm(c2(:,1)-c2(:,end))> 1
 end
 
 % Calculate interaction forces
-P=InterX(c1,c2);
+P=InterX(c1,c2); % SG: intersection point of the two floes
 if isempty(P) || size(P,2)<2 || isinf(overlap) || isempty(Xi)
     force_1=[0 0];
     pcenter=[0 0];
@@ -75,12 +75,12 @@ if isempty(P) || size(P,2)<2 || isinf(overlap) || isempty(Xi)
 else
     
     %Find number of overlapping regions
-    N1 = length(c1)-1; N2 = length(c2)-1;
-    Amin =  min([N1,N2])*100/1.75;
+    N1 = length(c1)-1; N2 = length(c2)-1; % SG: Number of verticies in each floe
+    Amin =  min([N1,N2])*100/1.75; % SG: What is this?
     if abs(length(Ar)-length(Xi)) > 0
         save('fail.mat','floe1','floe2','c2_boundary','PERIODIC','Modulus','dt');
     end    
-    Xi(Ar<Amin) = []; Yi(Ar<Amin) = []; Ar(Ar<Amin) = [];
+    Xi(Ar<Amin) = []; Yi(Ar<Amin) = []; Ar(Ar<Amin) = []; % only keep interactions greater than the area min
     N_contact=length(Xi);
     
     force_1=zeros(N_contact,2);
@@ -92,11 +92,11 @@ else
     for k=1:N_contact
         
         %Identify contact points
-        X = Xi{k}; Y = Yi{k};
-        poly = polyshape(X,Y);
+        X = Xi{k}; Y = Yi{k}; % SG: vertices of overlap area
+        poly = polyshape(X,Y); % SG: overlap polygon
         [cx, cy] = centroid(poly);
-        [verts,dist] = dsearchn([X Y],P');
-        p = [X(verts(dist<1),:) Y(verts(dist<1),:)];
+        [verts,dist] = dsearchn([X Y],P'); % SG: closests points in overlap area to intersection of floes and distances
+        p = [X(verts(dist<1),:) Y(verts(dist<1),:)]; % SG: points in overlap area with distance less than one from overlap
         [m,~] = size(p);
         
         %Caclulate normal forces

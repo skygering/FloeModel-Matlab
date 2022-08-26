@@ -13,9 +13,9 @@ live = cat(1,Floe.alive);
 Floe(live==0)=[];
 
 %% Find ghost floes if periodicity is being used
-N0=length(Floe);
+N0=length(Floe); % floes before adding ghost floes
 if PERIODIC
-    
+    % same code as in calc_eularian_data, except added parent
     ghostFloeX=[];
     ghostFloeY=[];
     parent=[];
@@ -32,15 +32,17 @@ if PERIODIC
             ghostFloeX=[ghostFloeX  Floe(i)];
             ghostFloeX(end).Xi=Floe(i).Xi-2*Lx*sign(x(i));
             parent=[parent  i];
+            % keep track of movement of needed ghost floes in x direction
             translation = [translation; -2*Lx*sign(x(i)) 0];
             
         end
         
         
     end
-    
+    % add ghost floe to floe list - it is a copy of an already existing
+    % floe, but with center changed
     Floe=[Floe ghostFloeX];
-    
+    % recalculate these due to adding a new floe
     x=cat(1,Floe.Xi);
     y=cat(1,Floe.Yi);
     alive=cat(1,Floe.alive);
@@ -72,6 +74,7 @@ alive=cat(1,Floe.alive);
 
 for i=1+Nb:N  %do interactions with boundary in a separate parfor loop
     
+    % reset everything having to do with interactions
     Floe(i).interactions=[];
     
     Floe(i).OverlapArea = 0;
@@ -87,10 +90,10 @@ for i=1+Nb:N  %do interactions with boundary in a separate parfor loop
     k=1;
     
     if ( alive(i) && ~isnan(x(i)) ) && COLLISION
-        for j=1:N
+        for j=1:N % compare floe i to the rest of the floes
             if j>i && alive(j) && sqrt((x(i)-x(j))^2 + (y(i)-y(j))^2)<(rmax(i)+rmax(j)) % if floes are potentially overlapping
                 Floe(i).potentialInteractions(k).floeNum=j;
-                Floe(i).potentialInteractions(k).c=[Floe(j).c_alpha(1,:)+x(j); Floe(j).c_alpha(2,:)+y(j)];
+                Floe(i).potentialInteractions(k).c=[Floe(j).c_alpha(1,:)+x(j); Floe(j).c_alpha(2,:)+y(j)]; % verticies of floe j
                 Floe(i).potentialInteractions(k).Ui=Floe(j).Ui;
                 Floe(i).potentialInteractions(k).Vi=Floe(j).Vi;
                 Floe(i).potentialInteractions(k).h=Floe(j).h;
@@ -99,6 +102,9 @@ for i=1+Nb:N  %do interactions with boundary in a separate parfor loop
                 Floe(i).potentialInteractions(k).Yi=y(j);
                 Floe(i).potentialInteractions(k).ksi_ice = Floe(j).ksi_ice;
                 k=k+1;
+                % SG: this seems like you're re-recording a lot of
+                % information... why don't you just keep track of the floe
+                % number? Does the floe information change?
             end
             
         end
@@ -119,7 +125,7 @@ parfor i=1+Nb:N  %now the interactions could be calculated in a parfor loop!
             
             [force_j,P_j, overlap] = floe_interactions(Floe(i),Floe(i).potentialInteractions(k),c2_boundary,PERIODIC,Modulus,dt);
             
-            if sum(abs(force_j(:)))~=0
+            if sum(abs(force_j(:)))~=0 % when we have non-zero forces add interactions and overlap area
                 Floe(i).interactions=[Floe(i).interactions ; floeNum*ones(size(force_j,1),1) force_j P_j zeros(size(force_j,1),1) overlap'];
                 Floe(i).OverlapArea = sum(overlap)+Floe(i).OverlapArea;
             elseif isinf(overlap)
@@ -134,7 +140,7 @@ parfor i=1+Nb:N  %now the interactions could be calculated in a parfor loop!
         end
         
     end
-    if ~PERIODIC
+    if ~PERIODIC % SG: Calculates floe interactions with boundary
         [force_b, P_j, overlap] = floe_interactions(Floe(i), floebound,c2_boundary,PERIODIC,Modulus,dt);
         in = inpolygon(x(i),y(i),c2_boundary(1,:)',c2_boundary(2,:)');
         if ~in
@@ -143,7 +149,7 @@ parfor i=1+Nb:N  %now the interactions could be calculated in a parfor loop!
         
         if sum(abs(force_b(:)))~=0
             [mm,~] = size(P_j);
-            for ii =1:mm
+            for ii =1:mm % SG: for all points of interaction, if it is on the border, remove force
                 if abs(P_j(ii,2)) == Ly
                     force_b(ii,1) = 0;
                 end
@@ -170,6 +176,7 @@ if isfield(Floe,'poly')
     Floe=rmfield(Floe,{'poly'});
 end
 
+%SG: Go through this section with Mukund
 %% Fill the lower part of the interacton matrix (floe_i,floe_j) for floes with j<i
 for i=1:N %this has to be done sequentially
       
@@ -179,7 +186,7 @@ for i=1:N %this has to be done sequentially
         
         indx=a(:,1);
         
-        for j=1:length(indx)
+        for j=1:length(indx) % SG: for each of the floe interactions
             
             if indx(j)<=N && indx(j)>i
                 Floe(indx(j)).interactions=[Floe(indx(j)).interactions; i -a(j,2:3) a(j,4:5) 0 a(j,7)];   % 0 is torque here that is to be calculated below
